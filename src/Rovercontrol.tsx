@@ -18,7 +18,7 @@ const RoverControl: React.FC = () => {
   const [websocket, setWebsocket] = useState<WebSocket | undefined>();
   const logEndRef = useRef<HTMLDivElement>(null); 
   
-  const serverUrl = '13.43.40.216:8000';
+  const serverUrl = '13.43.40.216';
 
   const scrollToBottom = () => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -29,7 +29,7 @@ const RoverControl: React.FC = () => {
   
   useEffect(() => {
     // Fetch previous logs from the server
-    fetch(`http://${serverUrl}/logs`)
+    fetch(`https://${serverUrl}/logs`)
       .then(response => response.json())
       .then(data => {
         const parsedLogs = data.logs.map((log: any) => ({
@@ -41,7 +41,7 @@ const RoverControl: React.FC = () => {
       })
       .catch(error => console.error(error));
 
-    fetch(`http://${serverUrl}/connection_status`)
+    fetch(`https://${serverUrl}/connection_status`)
     .then(response => response.json())
     .then(data => {
       console.log('Fetched connection status:', data.connected);
@@ -51,7 +51,7 @@ const RoverControl: React.FC = () => {
 
 
     // Connect to the websocket
-    const ws = new WebSocket(`ws://${serverUrl}/ws/frontend`);
+    const ws = new WebSocket(`wss://${serverUrl}/ws/frontend`);
       
     // ws.onopen = () => {
       //   setConnected(true);
@@ -113,7 +113,7 @@ const RoverControl: React.FC = () => {
   }, []);
   const reset_logs = async () => {
     try {
-      const response = await fetch(`http://${serverUrl}/logs`, {method: 'POST'});
+      const response = await fetch(`https://${serverUrl}/logs`, {method: 'POST'});
       if (response.ok) {
         setLogs([]); // Clear logs on the frontend only if the server successfully cleared logs
       }

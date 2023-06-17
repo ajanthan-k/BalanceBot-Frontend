@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.dockerignore
+Dockerfile
+fly.toml
+vite.config.ts.timestamp-1687011107043-3d6009d4cfcdb.mjs
