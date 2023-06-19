@@ -27,7 +27,7 @@ const RoverControl: React.FC = () => {
   const [websocket, setWebsocket] = useState<WebSocket | undefined>();
   const logEndRef = useRef<HTMLDivElement>(null); 
   
-  const serverUrl = '13.43.40.216';
+  const serverUrl = 'api.balancebot.site';
 
   const scrollToBottom = () => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
