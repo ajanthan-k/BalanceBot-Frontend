@@ -1,60 +1,36 @@
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 
 interface MazeProps {
-  maze: number[][];
+  start: [number, number];
+  end: [number, number];
+  edges: [[number, number], [number, number]][];
+  path: [number, number][]; // Add the path prop
 }
 
-const Drawmaze: FC<MazeProps> = ({maze}) => {
-  
-  if (!maze || maze.length === 0) {
-    return <svg width={448} height={250} className="border border-gray-400"> 
-           <text x="10" y="25" fill="black">Maze placeholder</text>
-           </svg>
-  }
-  const openColour: string = '#ffffff';
-  const startColour: string = '#00FF00';
-  const endColour: string = '#FF0000';
-  const wallColour: string = '#000000';
-  const blockedColour: string = '#808080';
+const DrawMaze: FC<MazeProps> = ({ start, end, edges, path }) => {
+  const svgContent = useMemo(() => {
+    const background = `<rect width="300" height="200" fill="#404040" />`;
+    const edgeSvgString = edges.map(([from, to]) => 
+      `<line x1="${from[0]}" y1="${from[1]}" x2="${to[0]}" y2="${to[1]}" stroke="#FFF" stroke-width="18" stroke-linecap="round" />`
+    ).join('');
+    const startSvgString = `<circle cx="${start[0]}" cy="${start[1]}" r="6" fill="#047857" />`;
+    const endSvgString = `<circle cx="${end[0]}" cy="${end[1]}" r="6" fill="#dc2626" />`;
 
-  const cellSize: number = 2;
+    // Add pathSvgString for drawing the path
+    let pathSvgString = "";
+    for (let i = 0; i < path.length - 1; i++) {
+      const from = path[i];
+      const to = path[i+1];
+      pathSvgString += `<line x1="${from[0]}" y1="${from[1]}" x2="${to[0]}" y2="${to[1]}" stroke="#581c87" stroke-width="4" stroke-linecap="round" />`;
+    }
 
-  const svgWidth: number = maze[0].length * cellSize;
-  const svgHeight: number = maze.length * cellSize;
+    return `${background}${edgeSvgString}${pathSvgString}${startSvgString}${endSvgString}`;
+  }, [start, end, edges, path]);
 
-
-  const renderMaze = (): JSX.Element[][] => {
-    const mazeSvg: JSX.Element[][] = maze.map((row, rowIndex) =>
-      row.map((cell, colIndex) => {
-        const x: number = colIndex * cellSize;
-        const y: number = rowIndex * cellSize;
-
-        switch (cell) {
-            case 0: 
-              return <rect key={`${rowIndex}-${colIndex}`} x={x} y={y} width={cellSize} height={cellSize} fill={openColour} />;
-            case 1:
-              return <rect key={`${rowIndex}-${colIndex}`} x={x} y={y} width={cellSize} height={cellSize} fill={startColour} />;
-            case 2:
-              return <rect key={`${rowIndex}-${colIndex}`} x={x} y={y} width={cellSize} height={cellSize} fill={endColour} />;
-            case 3:
-              return <rect key={`${rowIndex}-${colIndex}`} x={x} y={y} width={cellSize} height={cellSize} fill={wallColour} />;
-            case 4:
-              return <rect key={`${rowIndex}-${colIndex}`} x={x} y={y} width={cellSize} height={cellSize} fill={blockedColour} />;
-            default:
-              return <rect key={`${rowIndex}-${colIndex}`} x={x} y={y} width={cellSize} height={cellSize} fill={openColour} />;
-        }
-      })
-    );
-    return mazeSvg;
-  
-  };
-
-  // Render the SVG
   return (
-    <svg width={svgWidth} height={svgHeight} className="border border-gray-400">
-      {renderMaze()}
-    </svg>
+    <svg width="450" height="300" viewBox="0 0 300 200" className="border border-gray-400" dangerouslySetInnerHTML={{ __html: svgContent }} />
+      
   );
 };
 
-export default Drawmaze;
+export default DrawMaze;

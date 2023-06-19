@@ -1,16 +1,25 @@
-import React, { useEffect, useState, useRef } from 'react';
-import Drawmaze from './Drawmaze';
+import React, { useEffect, useState, useRef, ChangeEvent } from 'react';
+import DrawMaze from './Drawmaze';
 
 interface Log {
   time: string;
   message: string;
 }
 
+interface Maze {
+  start: [number, number];
+  end: [number, number];
+  edges: [[number, number], [number, number]][];
+  path: [number, number][];
+}
+
 const RoverControl: React.FC = () => {
 
   const [isConnected, setConnected] = useState<boolean>(false);
   const [logs, setLogs] = useState<Log[]>([]);
-  const [maze, setMaze] = useState<number[][]>([]);
+  const [maze, setMaze] = useState<Maze>();
+  const [mazeIds, setMazeIds] = useState<string[]>([]);
+
   const [inputMessage, setInputMessage] = useState<string>('');
   const [isManualMode, setManualMode] = useState<boolean>(false);
 
@@ -26,6 +35,14 @@ const RoverControl: React.FC = () => {
 
   
   useEffect(scrollToBottom, [logs]);
+
+  useEffect(() => {
+    // Fetch maze IDs when the component is mounted
+    fetch(`https://${serverUrl}/mazehistory/id`)
+      .then(response => response.json())
+      .then(data => setMazeIds(data))
+      .catch(error => console.error(`Could not fetch maze IDs: ${error}`));
+  }, []);
   
   useEffect(() => {
     // Fetch previous logs from the server
@@ -49,7 +66,6 @@ const RoverControl: React.FC = () => {
     })
     .catch(error => console.error(`Could not fetch connection status: ${error}`));
 
-
     // Connect to the websocket
     const ws = new WebSocket(`wss://${serverUrl}/ws/frontend`);
       
@@ -58,15 +74,20 @@ const RoverControl: React.FC = () => {
       // };
       
     ws.onmessage = (event) => {
-      console.log(event.data)
       const data = JSON.parse(event.data);
       switch (data.type) {
         case "log":
           setLogs(prevLogs => [...prevLogs, {time: data.time, message: data.message}]);
           break;
-        case "maze":
-          setMaze(data.maze);
-          break;
+          case "maze":
+            const maze = {
+              start: data.start,
+              end: data.end,
+              edges: data.edges,
+              path: data.path,
+            };
+            setMaze(maze);
+            break;
         case "connection_status":
           console.log('Log connection status:', data.connected);
           setConnected(data.connected);
@@ -86,6 +107,15 @@ const RoverControl: React.FC = () => {
     };
   
     }, []);
+
+    function handleDropdownChange(event: ChangeEvent<HTMLSelectElement>) {
+      const selectedId = event.target.value;
+    
+      // Send selected ID to server
+      if (websocket) {
+        websocket.send(JSON.stringify({ type: "maze_id", maze_id: selectedId }));
+      }
+    }
     
     
     const handleStartStop = (type: 'start' | 'stop') => {
@@ -129,6 +159,8 @@ const RoverControl: React.FC = () => {
     const s = "0" + date.getSeconds();
     return `${h.slice(-2)}:${m.slice(-2)}:${s.slice(-2)}`;
   };
+
+  
 
   return (
   <div className="relative bg-white w-screen h-screen">
@@ -187,8 +219,21 @@ const RoverControl: React.FC = () => {
         </ul>
       </div>
 
-      <div className="relative mt-6">
-        <Drawmaze maze={maze} />
+      <div className="max-w-sm">
+        <label htmlFor="mazeIds" className="block mb-2 text-sm font-medium text-gray-900">
+          Maze history
+        </label>
+        <select id="mazeIds" 
+                className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                onChange={handleDropdownChange}>
+          {mazeIds.map(id => (
+            <option key={id} value={id}>{id}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-6">
+        {maze && <DrawMaze {...maze} />}
       </div>
     </div>
   </div>
