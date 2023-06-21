@@ -64,15 +64,14 @@ const RoverControl: React.FC = () => {
       console.log('Fetched connection status:', data.connected);
       setConnected(data.connected);
     })
-    .catch(error => console.error(`Could not fetch connection status: ${error}`));
+    .catch(error => 
+      console.error(`Can't fetch connection status: ${error}`));
+
+
 
     // Connect to the websocket
     const ws = new WebSocket(`wss://${serverUrl}/ws/frontend`);
-      
-    // ws.onopen = () => {
-      //   setConnected(true);
-      // };
-      
+       
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       switch (data.type) {
@@ -89,7 +88,6 @@ const RoverControl: React.FC = () => {
             setMaze(maze);
             break;
         case "connection_status":
-          console.log('Log connection status:', data.connected);
           setConnected(data.connected);
         }
       };
@@ -108,30 +106,6 @@ const RoverControl: React.FC = () => {
   
     }, []);
 
-    function handleDropdownChange(event: ChangeEvent<HTMLSelectElement>) {
-      const selectedId = event.target.value;
-    
-      // Send selected ID to server
-      if (websocket) {
-        websocket.send(JSON.stringify({ type: "maze_id", maze_id: selectedId }));
-      }
-    }
-    
-    
-    const handleStartStop = (type: 'start' | 'stop') => {
-      if (websocket) {
-        websocket.send(JSON.stringify({type}));
-    }
-  };
-  
-  const handleSendMessage = () => {
-    if (websocket) {
-      const messageToSend = { type: "message", message: inputMessage };
-      websocket.send(JSON.stringify(messageToSend));
-      setInputMessage(''); // Clear the input field
-    }
-  };
-
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -141,26 +115,46 @@ const RoverControl: React.FC = () => {
     };
     
   }, []);
-  const reset_logs = async () => {
+
+  function handleDropdownChange(event: ChangeEvent<HTMLSelectElement>) {
+    const selectedId = event.target.value;
+    // Send selected ID to server
+    if (websocket) {
+      websocket.send(JSON.stringify({ type: "maze_id", maze_id: selectedId }));
+    }
+  }
+    
+  function handleStartStop(type: 'start' | 'stop') {
+    if (websocket) {
+      websocket.send(JSON.stringify({type}));
+    }
+  }
+  
+  function handleSendMessage() {
+    if (websocket) {
+      const messageToSend = { type: "message", message: inputMessage };
+      websocket.send(JSON.stringify(messageToSend));
+      setInputMessage('');
+    }
+  }
+  
+  async function resetLogs() {
     try {
       const response = await fetch(`https://${serverUrl}/logs`, {method: 'POST'});
       if (response.ok) {
-        setLogs([]); // Clear logs on the frontend only if the server successfully cleared logs
+        setLogs([]);
       }
     } catch (error) {
       console.error("Error resetting logs: ", error);
     }
-  };
+  }
 
-
-  const formatTime = (date: Date) => {
+  function formatTime(date: Date) {
     const h = "0" + date.getHours();
     const m = "0" + date.getMinutes();
     const s = "0" + date.getSeconds();
     return `${h.slice(-2)}:${m.slice(-2)}:${s.slice(-2)}`;
-  };
-
-  
+  }
 
   return (
   <div className="relative bg-white w-screen h-screen">
@@ -174,7 +168,7 @@ const RoverControl: React.FC = () => {
       </div>
       
       <div className="flex items-center space-x-4 mb-6 ">
-        <button onClick={() => reset_logs()} className="text-white bg-gray-700 hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">Reset logs</button>
+        <button onClick={() => resetLogs()} className="text-white bg-gray-700 hover:bg-gray-800 focus:ring-2 focus:ring-gray-500 font-medium rounded-lg text-sm px-5 py-2.5 focus:outline-none">Reset logs</button>
         <button onClick={() => handleStartStop('start')} className="focus:outline-none text-white bg-emerald-500 hover:bg-emerald-600 focus:ring-2 focus:ring-emerald-500 font-medium rounded-lg text-sm px-5 py-2.5">Start</button>
         <button onClick={() => handleStartStop('stop')} className="focus:outline-none text-white bg-red-500 hover:bg-red-600 focus:ring-2 focus:ring-red-500 font-medium rounded-lg text-sm px-5 py-2.5">Stop</button>
 
@@ -194,18 +188,23 @@ const RoverControl: React.FC = () => {
       </div>
 
       {isManualMode && (
-        <div>
-          <input
-            type="text"
-            className="rounded px-2 py-1 border-gray-400 border-2 shadow-lg"
-            value={inputMessage}
-            onChange={e => setInputMessage(e.target.value)}
-          />
-          <button onClick={handleSendMessage} className="bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-2 rounded ml-2">
-            Send Message
-          </button>
-        </div>
-      )}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          handleSendMessage();
+        }}
+      >
+        <input
+          type="text"
+          className="rounded px-2 py-1 border-gray-400 border-2 shadow-lg"
+          value={inputMessage}
+          onChange={e => setInputMessage(e.target.value)}
+        />
+        <button type="submit" className="bg-blue-700 hover:bg-blue-800 text-white font-medium py-2 px-2 rounded ml-2">
+          Send Message
+        </button>
+      </form>
+    )}
 
       <div className="my-6 overflow-y-auto bg-gray-200 h-32 max-w-md border border-gray-400 rounded-lg shadow-lg text-sm font-semibold">
         <ul>
@@ -232,7 +231,7 @@ const RoverControl: React.FC = () => {
         </select>
       </div>
 
-      <div className="mt-6">
+      <div className="my-6">
         {maze && <DrawMaze {...maze} />}
       </div>
     </div>
