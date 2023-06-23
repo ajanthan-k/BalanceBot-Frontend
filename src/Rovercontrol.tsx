@@ -11,13 +11,18 @@ interface Maze {
   end: [number, number];
   edges: [[number, number], [number, number]][];
   path: [number, number][];
+  // pos?: [number, number];
+  // angle? : number;
+  rover?: {pos: [number, number], angle: number};
 }
 
 const RoverControl: React.FC = () => {
 
   const [isConnected, setConnected] = useState<boolean>(false);
   const [logs, setLogs] = useState<Log[]>([]);
-  const [maze, setMaze] = useState<Maze>();
+  const [maze, setMaze] = useState<Maze>(
+    { start: [25, 25], end: [275, 175], edges: [], path: []}
+  );
   const [mazeIds, setMazeIds] = useState<string[]>([]);
 
   const [inputMessage, setInputMessage] = useState<string>('');
@@ -27,7 +32,7 @@ const RoverControl: React.FC = () => {
   const [websocket, setWebsocket] = useState<WebSocket | undefined>();
   const logEndRef = useRef<HTMLDivElement>(null); 
   
-  const serverUrl = 'api.balancebot.site';
+  const serverUrl = 'localhost:8000';
 
   const scrollToBottom = () => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -79,13 +84,13 @@ const RoverControl: React.FC = () => {
           setLogs(prevLogs => [...prevLogs, {time: data.time, message: data.message}]);
           break;
           case "maze":
-            const maze = {
-              start: data.start,
-              end: data.end,
-              edges: data.edges,
-              path: data.path,
-            };
-            setMaze(maze);
+            setMaze(prevMaze => ({
+              start: data.start ? data.start : prevMaze.start,
+              end: data.end ? data.end : prevMaze.end,
+              edges: data.edges ? data.edges : prevMaze.edges,
+              path: data.path ? data.path : prevMaze.path,
+              rover: data.rover ? {pos: data.rover.pos, angle: data.rover.angle} : prevMaze.rover
+            }));
             break;
         case "connection_status":
           setConnected(data.connected);
@@ -157,7 +162,7 @@ const RoverControl: React.FC = () => {
   }
 
   return (
-  <div className="relative bg-white w-screen h-screen">
+  <div className="relative bg-slate-100 w-screen h-screen">
     <div className="max-w-5xl w-11/12 mx-auto pt-5">
       <h1 className="text-2xl font-bold mb-4 ">BalanceBot</h1>
       <div className={`absolute top-4 right-6 font-bold text-center px-4 py-2 rounded-lg bg-gray-700 
@@ -231,7 +236,7 @@ const RoverControl: React.FC = () => {
         </select>
       </div>
 
-      <div className="my-6">
+      <div className="my-8">
         {maze && <DrawMaze {...maze} />}
       </div>
     </div>
