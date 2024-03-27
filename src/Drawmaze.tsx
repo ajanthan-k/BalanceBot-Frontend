@@ -5,8 +5,6 @@ interface MazeProps {
   end: [number, number];
   edges: [[number, number], [number, number]][];
   path: [number, number][]; 
-  // pos?: [number, number];
-  // angle? : number;
   rover?: {pos: [number, number], angle: number};
 }
 
@@ -29,13 +27,6 @@ const DrawMaze: FC<MazeProps> = ({ start, end, edges, path, rover }) => {
 
     // Add rover position and angle
     let roverSvgString = "";
-    // if (pos && angle != null) {
-    //   const roverX = pos[0];
-    //   const roverY = pos[1];
-    //   roverSvgString = `<g transform="rotate(${angle}, ${roverX}, ${roverY})">
-    //                       <polygon points="${roverX},${roverY - 4} ${roverX - 2},${roverY + 2} ${roverX + 2},${roverY + 2}" fill="#5A9"/>
-    //                     </g>`;
-    //   }
 
     if (rover) {
       const { pos, angle } = rover;

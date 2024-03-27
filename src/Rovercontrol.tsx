@@ -11,8 +11,6 @@ interface Maze {
   end: [number, number];
   edges: [[number, number], [number, number]][];
   path: [number, number][];
-  // pos?: [number, number];
-  // angle? : number;
   rover?: {pos: [number, number], angle: number};
 }
 
@@ -162,7 +160,7 @@ const RoverControl: React.FC = () => {
   }
 
   return (
-  <div className="relative bg-slate-100 w-screen h-screen">
+  <div className="relative bg-slate-100 w-screen h-full">
     <div className="max-w-5xl w-11/12 mx-auto pt-5">
       <h1 className="text-2xl font-bold mb-4 ">BalanceBot</h1>
       <div className={`absolute top-4 right-6 font-bold text-center px-4 py-2 rounded-lg bg-gray-700 
