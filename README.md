@@ -11,6 +11,8 @@ This is the source code for the frontend of the [BalanceBot project](https://git
 
 Currently hosted on Vercel at `balancebot.site` (until domain expires May 2024)
 
+![frontend](https://github.com/ajanthan-k/BalanceBot-Frontend/assets/66730849/c2d2c312-ba36-402f-bccf-543fa71e5fe3)
+
 ## Getting started
 
 1. Clone repo
