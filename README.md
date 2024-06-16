@@ -9,7 +9,7 @@ This is the source code for the frontend of the [BalanceBot project](https://git
 - Tailwind CSS - A utility-first CSS framework for rapidly building custom UI's.
 - Vite - A fast build tool and development server.
 
-Currently hosted on Vercel at `balancebot.site` (until domain expires May 2024)
+Currently hosted on Vercel at `balancebot.ajanthank.com`.
 
 ![frontend](https://github.com/ajanthan-k/BalanceBot-Frontend/assets/66730849/c2d2c312-ba36-402f-bccf-543fa71e5fe3)
 

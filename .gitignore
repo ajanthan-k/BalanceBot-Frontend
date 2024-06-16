@@ -1,8 +1,9 @@
+# Ignore everything
 *
 
+# But not these files...
 !README.md
 !public/
-!src/
 !eslintrc.cjs
 !index.html
 !package-lock.json
@@ -12,3 +13,8 @@
 !tsconfig.json
 !tsconfig.node.json
 !vite.config.ts
+
+!src/
+
+src/*
+!src/**
